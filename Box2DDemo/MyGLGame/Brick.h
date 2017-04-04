@@ -14,8 +14,7 @@
 
 @interface Brick : NSObject {
     @public
-    int positionX, positionY;
-    int _width, _height, _indices;
+    int _indices;
     bool hit;
     b2Body *body;
     GLuint _vertexBuffer[2], _vertexArray;

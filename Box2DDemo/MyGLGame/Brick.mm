@@ -11,12 +11,10 @@
 
 @implementation Brick
 
-- (id) init:(int)posX :(int)posY :(int)width :(int)height {
+- (id) init{
     
     self = [super init];
     if (self) {
-        positionX = posX; positionY = posY;
-        _width = width; _height = height;
         _indices = 0;
     }
     

@@ -19,7 +19,10 @@ enum
     NumVertexAttribs
 };
 
-@interface CBox2D : NSObject 
+@interface CBox2D : NSObject {
+@public
+    NSMutableArray *bricks;
+}
 
 -(void) HelloWorld;
 
