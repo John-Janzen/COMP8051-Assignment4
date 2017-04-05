@@ -266,4 +266,8 @@
 {
     [box2d LaunchBall];
 }
+- (IBAction)singlePan:(UIPanGestureRecognizer *)sender {
+    [box2d movePlayer: [sender locationInView:self.view].x];
+}
+
 @end

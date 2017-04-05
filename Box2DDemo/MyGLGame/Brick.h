@@ -21,7 +21,7 @@
     GLfloat *_verticesArray;
 }
 
-- (id) init: (int)posX : (int)posY : (int)width : (int) height;
+- (id) init;
 
 @end
 

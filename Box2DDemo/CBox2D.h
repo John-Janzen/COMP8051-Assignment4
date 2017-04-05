@@ -27,6 +27,7 @@ enum
 -(void) HelloWorld;
 
 -(void) LaunchBall;
+-(void) movePlayer:(CGFloat) pos;
 -(void) Update:(float)elapsedTime;
 -(void) Render:(int)mvpMatPtr;
 -(void) RegisterHit;
