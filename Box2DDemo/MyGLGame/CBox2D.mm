@@ -11,6 +11,10 @@
 #include <OpenGLES/ES2/glext.h>
 #include <stdio.h>
 #include "Brick.h"
+#include "Player.h"
+#include "Wall.h"
+#include "Floor.h"
+#include "Collidables.h"
 
 #define BUFFER_OFFSET(i) ((char *)NULL + (i))
 //#define LOG_TO_CONSOLE
@@ -28,7 +32,7 @@
 #define BALL_POS_X			400
 #define BALL_POS_Y			75
 #define BALL_RADIUS			15.0f
-#define BALL_VELOCITY		100000.0f
+#define BALL_VELOCITY		100000000.0f
 #define BALL_SPHERE_SEGS	128
 
 const float MAX_TIMESTEP = 1.0f/60.0f;
@@ -55,13 +59,12 @@ public:
             b2Body* bodyA = contact->GetFixtureA()->GetBody();
             CBox2D *parentObj = (__bridge CBox2D *)(bodyA->GetUserData());
             if (parentObj != nil) {
-                for (Brick *brick in parentObj->bricks) {
-                    if (brick->body == bodyA) {
-                        brick->hit = true;
+                for (Collidable *object in parentObj->objects) {
+                    if (object->body == bodyA) {
+                        object->hit = true;
                         return;
                     }
                 }
-                [parentObj RegisterHit];
             }
         }
     }
@@ -73,27 +76,22 @@ public:
 
 @interface CBox2D ()
 {
-    @public
-    b2Body *theBall, *thePlayer;
-    @private
+    b2Body *theBall;
     // Box2D-specific objects
     b2Vec2 *gravity;
     b2World *world;
-    b2BodyDef *groundBodyDef;
-    b2Body *groundBody;
-    b2PolygonShape *groundBox;
     
     CContactListener *contactListener;
     
     // GL-specific variables
     // You will need to set up 2 vertex arrays (for brick and ball)
-    GLuint ballVertexArray, playerVertexArray;
-    int numBallVerts, numOfBricks, numPlayerVerts, brickDistanceDown, bricksPerRow;
+    GLuint ballVertexArray;
+    int numBallVerts, numOfBricks, brickDistanceDown, bricksPerRow;
     CGFloat width, height;
     GLKMatrix4 modelViewProjectionMatrix;
 
     // You will also need some extra variables here
-    bool ballLaunched, ballHitPlayer, ballHitFloor;
+    bool ballLaunched, ballHitFloor, started;
     float totalElapsedTime;
 }
 
@@ -107,17 +105,12 @@ public:
     if (self) {
         gravity = new b2Vec2(0.0f, 0.0f);
         world = new b2World(*gravity);
-        bricks = [[NSMutableArray alloc] init];
+        objects = [[NSMutableArray alloc] init];
         width = [UIScreen mainScreen].bounds.size.width;
         height = [UIScreen mainScreen].bounds.size.height;
         bricksPerRow = width / BRICK_WIDTH;
         numOfBricks = bricksPerRow * 6;
         brickDistanceDown = (numOfBricks / bricksPerRow) * BRICK_HEIGHT;
-        
-        // For HelloWorld
-        groundBodyDef = NULL;
-        groundBody = NULL;
-        groundBox = NULL;
 
         // For brick & ball sample
         contactListener = new CContactListener();
@@ -129,53 +122,75 @@ public:
             if (BRICK_POS_X + (row * BRICK_WIDTH) + (row * 3) > width) {
                 row = 0; col++;
             }
-            [bricks addObject:[[Brick alloc] init]];
-            Brick *brick = [bricks lastObject];
+            [objects addObject:[[Brick alloc] init]];
+            Brick *object = [objects lastObject];
             b2BodyDef brickBodyDef;
             brickBodyDef.type = b2_kinematicBody;
-            brickBodyDef.position.Set(BRICK_POS_X + (row * BRICK_WIDTH) + (row * 3), (height + ((col - 2) * 15)) - brickDistanceDown);
-            brick->body = world->CreateBody(&brickBodyDef);
-            if (brick->body)
+            brickBodyDef.position.Set(BRICK_POS_X + (row * BRICK_WIDTH) + (row * 3), ((height + ((col - 2) * 15)) - brickDistanceDown) - height / 2);
+            object->body = world->CreateBody(&brickBodyDef);
+            if (object->body)
             {
-                brick->body->SetUserData((__bridge void *)self);
-                brick->body->SetAwake(false);
+                object->body->SetUserData((__bridge void *)self);
+                object->body->SetAwake(false);
                 b2PolygonShape dynamicBox;
                 dynamicBox.SetAsBox(BRICK_WIDTH / 2, BRICK_HEIGHT / 2);
                 b2FixtureDef fixtureDef;
                 fixtureDef.shape = &dynamicBox;
                 fixtureDef.density = 1.0f;
-                fixtureDef.friction = 0.3f;
+                fixtureDef.friction = 0.0f;
                 fixtureDef.restitution = 1.0f;
-                brick->body->CreateFixture(&fixtureDef);
-                brick->hit = false;
+                object->body->CreateFixture(&fixtureDef);
+                object->hit = false;
                 
             }
         }
         
+        [objects addObject:[[Player alloc] init]];
+        Player *object = [objects lastObject];
         b2BodyDef brickBodyDef;
         brickBodyDef.type = b2_kinematicBody;
         brickBodyDef.position.Set(width / 2, 25.0f);
-        thePlayer = world->CreateBody(&brickBodyDef);
-        if (thePlayer)
+        object->body = world->CreateBody(&brickBodyDef);
+        if (object->body)
         {
-            thePlayer->SetUserData((__bridge void *)self);
-            thePlayer->SetAwake(false);
+            object->body->SetUserData((__bridge void *)self);
+            object->body->SetAwake(false);
             b2PolygonShape dynamicBox;
             dynamicBox.SetAsBox(BRICK_WIDTH, BRICK_HEIGHT / 2);
             b2FixtureDef fixtureDef;
             fixtureDef.shape = &dynamicBox;
             fixtureDef.density = 1.0f;
-            fixtureDef.friction = 0.3f;
+            fixtureDef.friction = 0.0f;
             fixtureDef.restitution = 1.0f;
-            thePlayer->CreateFixture(&fixtureDef);
-            
+            object->body->CreateFixture(&fixtureDef);
+            object->hit = false;
+        }
+        
+        b2BodyDef ballBodyDef;
+        ballBodyDef.type = b2_dynamicBody;
+        ballBodyDef.position.Set(width / 2, BALL_POS_Y);
+        theBall = world->CreateBody(&ballBodyDef);
+        if (theBall)
+        {
+            theBall->SetUserData((__bridge void *)self);
+            theBall->SetAwake(false);
+            b2CircleShape circle;
+            circle.m_p.Set(0, 0);
+            circle.m_radius = BALL_RADIUS;
+            b2FixtureDef circleFixtureDef;
+            circleFixtureDef.shape = &circle;
+            circleFixtureDef.density = 0.2f;
+            circleFixtureDef.friction = 0.0f;
+            circleFixtureDef.restitution = 1.0f;
+            theBall->CreateFixture(&circleFixtureDef);
         }
         
         glEnable(GL_DEPTH_TEST);
         
-        for (Brick *brick in bricks) {
-            if (brick->body)
+        for (Collidable *object in objects) {
+            if (object->body && [object isKindOfClass:[Brick class]])
             {
+                Brick *brick = (Brick*)object;
                 glGenVertexArraysOES(1, &brick->_vertexArray);
                 glBindVertexArrayOES(brick->_vertexArray);
                 
@@ -208,7 +223,6 @@ public:
                 vertPos[k++] = brick->body->GetPosition().y - BRICK_HEIGHT/2;
                 vertPos[k++] = 10;
                 brick->_indices++;
-                brick->_verticesArray = vertPos;
                 glBufferData(GL_ARRAY_BUFFER, sizeof(vertPos), vertPos, GL_STATIC_DRAW);
                 glEnableVertexAttribArray(VertexAttribPosition);
                 glVertexAttribPointer(VertexAttribPosition, 3, GL_FLOAT, GL_FALSE, 3*sizeof(GLfloat), BUFFER_OFFSET(0));
@@ -229,27 +243,8 @@ public:
             }
         }
         
-        b2BodyDef ballBodyDef;
-        ballBodyDef.type = b2_dynamicBody;
-        ballBodyDef.position.Set(width / 2, BALL_POS_Y);
-        theBall = world->CreateBody(&ballBodyDef);
-        if (theBall)
-        {
-            theBall->SetUserData((__bridge void *)self);
-            theBall->SetAwake(false);
-            b2CircleShape circle;
-            circle.m_p.Set(0, 0);
-            circle.m_radius = BALL_RADIUS;
-            b2FixtureDef circleFixtureDef;
-            circleFixtureDef.shape = &circle;
-            circleFixtureDef.density = 1.0f;
-            circleFixtureDef.friction = 0.3f;
-            circleFixtureDef.restitution = 1.0f;
-            theBall->CreateFixture(&circleFixtureDef);
-        }
-        
         totalElapsedTime = 0;
-        ballLaunched = ballHitPlayer = false;
+        ballLaunched = false;
     }
     return self;
 }
@@ -258,8 +253,6 @@ public:
 {
     if (gravity) delete gravity;
     if (world) delete world;
-    if (groundBodyDef) delete groundBodyDef;
-    if (groundBox) delete groundBox;
     if (contactListener) delete contactListener;
 }
 
@@ -267,14 +260,13 @@ public:
 {
     // Check here if we need to launch the ball
     //  and if so, use ApplyLinearImpulse() and SetActive(true)
-    if (ballLaunched)
+    if (ballLaunched && !started)
     {
         theBall->ApplyLinearImpulse(b2Vec2(0, BALL_VELOCITY), theBall->GetPosition(), true);
         theBall->SetActive(true);
-#ifdef LOG_TO_CONSOLE
-        NSLog(@"Applying impulse %f to ball\n", BALL_VELOCITY);
-#endif
+
         ballLaunched = false;
+        started = true;
     }
     
     // Check if it is time yet to drop the brick, and if so
@@ -283,25 +275,33 @@ public:
     
     // If the last collision test was positive,
     //  stop the ball and destroy the brick
-    for (int i = 0; i < numOfBricks; i++) {
-        Brick *brick = [bricks objectAtIndex:i];
-        if (brick->hit) {
-            theBall->SetLinearVelocity(b2Vec2(0, -BALL_VELOCITY));
+    for (int i = 0; i < objects.count; i++) {
+        Collidable *object = [objects objectAtIndex:i];
+        if (object->hit && [object isKindOfClass:[Brick class]]) {
             theBall->SetAngularVelocity(0);
-            world->DestroyBody(brick->body);
-            [bricks removeObject:brick];
+            world->DestroyBody(object->body);
+            [objects removeObject:object];
             i--;
             numOfBricks--;
+            NSLog(@"Brick Hit");
         }
-    }
-    if (ballHitPlayer) {
-        theBall->SetLinearVelocity(b2Vec2(0, BALL_VELOCITY));
-        theBall->SetAngularVelocity(0);
-        ballHitPlayer = false;
-    }
-    if (ballHitFloor) {
-        theBall->SetAwake(false);
-        ballHitFloor = false;
+        if (object->hit && [object isKindOfClass:[Player class]]) {
+            float direction = (theBall->GetPosition().x - object->body->GetPosition().x) / BRICK_WIDTH;
+            theBall->SetLinearVelocity(b2Vec2(BALL_VELOCITY * direction, BALL_VELOCITY));
+            theBall->SetAngularVelocity(0);
+            NSLog(@"Player Hit");
+            object->hit = false;
+        }
+        if (object->hit && [object isKindOfClass:[Floor class]]) {
+            theBall->SetAwake(false);
+            NSLog(@"Floor Hit");
+            object->hit = false;
+            started = false;
+        }
+        if (object->hit && [object isKindOfClass:[Wall class]]) {
+            NSLog(@"Wall Hit");
+            object->hit = false;
+        }
     }
     
     if (world)
@@ -317,59 +317,61 @@ public:
             world->Step(elapsedTime, NUM_VEL_ITERATIONS, NUM_POS_ITERATIONS);
         }
     }
-    
-    if (thePlayer) {
-        glGenVertexArraysOES(1, &playerVertexArray);
-        glBindVertexArrayOES(playerVertexArray);
-        
-        GLuint vertexBuffers[2];
-        glGenBuffers(2, vertexBuffers);
-        glBindBuffer(GL_ARRAY_BUFFER, vertexBuffers[0]);
-        GLfloat vertPos[18];
-        int k = 0;
-        numPlayerVerts = 0;
-        vertPos[k++] = thePlayer->GetPosition().x - BRICK_WIDTH;
-        vertPos[k++] = thePlayer->GetPosition().y + BRICK_HEIGHT/2;
-        vertPos[k++] = 10;
-        numPlayerVerts++;
-        vertPos[k++] = thePlayer->GetPosition().x + BRICK_WIDTH;
-        vertPos[k++] = thePlayer->GetPosition().y + BRICK_HEIGHT/2;
-        vertPos[k++] = 10;
-        numPlayerVerts++;
-        vertPos[k++] = thePlayer->GetPosition().x + BRICK_WIDTH;
-        vertPos[k++] = thePlayer->GetPosition().y - BRICK_HEIGHT/2;
-        vertPos[k++] = 10;
-        numPlayerVerts++;
-        vertPos[k++] = thePlayer->GetPosition().x - BRICK_WIDTH;
-        vertPos[k++] = thePlayer->GetPosition().y + BRICK_HEIGHT/2;
-        vertPos[k++] = 10;
-        numPlayerVerts++;
-        vertPos[k++] = thePlayer->GetPosition().x + BRICK_WIDTH;
-        vertPos[k++] = thePlayer->GetPosition().y - BRICK_HEIGHT/2;
-        vertPos[k++] = 10;
-        numPlayerVerts++;
-        vertPos[k++] = thePlayer->GetPosition().x - BRICK_WIDTH;
-        vertPos[k++] = thePlayer->GetPosition().y - BRICK_HEIGHT/2;
-        vertPos[k++] = 10;
-        numPlayerVerts++;
-        glBufferData(GL_ARRAY_BUFFER, sizeof(vertPos), vertPos, GL_STATIC_DRAW);
-        glEnableVertexAttribArray(VertexAttribPosition);
-        glVertexAttribPointer(VertexAttribPosition, 3, GL_FLOAT, GL_FALSE, 3*sizeof(GLfloat), BUFFER_OFFSET(0));
-        
-        GLfloat vertCol[numPlayerVerts*3];
-        for (k=0; k<numPlayerVerts*3; k+=3)
-        {
-            vertCol[k] = 1.0f;
-            vertCol[k+1] = 1.0f;
-            vertCol[k+2] = 0.0f;
+    for (Collidable *object in objects) {
+        if ([object isKindOfClass:[Player class]]) {
+            Player *player = (Player*) object;
+            glGenVertexArraysOES(1, &player->_vertexArray);
+            glBindVertexArrayOES(player->_vertexArray);
+            
+            glGenBuffers(2, player->_vertexBuffer);
+            glBindBuffer(GL_ARRAY_BUFFER, player->_vertexBuffer[0]);
+            GLfloat vertPos[18];
+            int k = 0;
+            player->_indices = 0;
+            vertPos[k++] = player->body->GetPosition().x - BRICK_WIDTH;
+            vertPos[k++] = player->body->GetPosition().y + BRICK_HEIGHT/2;
+            vertPos[k++] = 10;
+            player->_indices++;
+            vertPos[k++] = player->body->GetPosition().x + BRICK_WIDTH;
+            vertPos[k++] = player->body->GetPosition().y + BRICK_HEIGHT/2;
+            vertPos[k++] = 10;
+            player->_indices++;
+            vertPos[k++] = player->body->GetPosition().x + BRICK_WIDTH;
+            vertPos[k++] = player->body->GetPosition().y - BRICK_HEIGHT/2;
+            vertPos[k++] = 10;
+            player->_indices++;
+            vertPos[k++] = player->body->GetPosition().x - BRICK_WIDTH;
+            vertPos[k++] = player->body->GetPosition().y + BRICK_HEIGHT/2;
+            vertPos[k++] = 10;
+            player->_indices++;
+            vertPos[k++] = player->body->GetPosition().x + BRICK_WIDTH;
+            vertPos[k++] = player->body->GetPosition().y - BRICK_HEIGHT/2;
+            vertPos[k++] = 10;
+            player->_indices++;
+            vertPos[k++] = player->body->GetPosition().x - BRICK_WIDTH;
+            vertPos[k++] = player->body->GetPosition().y - BRICK_HEIGHT/2;
+            vertPos[k++] = 10;
+            player->_indices++;
+            glBufferData(GL_ARRAY_BUFFER, sizeof(vertPos), vertPos, GL_STATIC_DRAW);
+            glEnableVertexAttribArray(VertexAttribPosition);
+            glVertexAttribPointer(VertexAttribPosition, 3, GL_FLOAT, GL_FALSE, 3*sizeof(GLfloat), BUFFER_OFFSET(0));
+            
+            GLfloat vertCol[player->_indices*3];
+            for (k=0; k<player->_indices*3; k+=3)
+            {
+                vertCol[k] = 1.0f;
+                vertCol[k+1] = 1.0f;
+                vertCol[k+2] = 0.0f;
+            }
+            glBindBuffer(GL_ARRAY_BUFFER, player->_vertexBuffer[1]);
+            glBufferData(GL_ARRAY_BUFFER, sizeof(vertCol), vertCol, GL_STATIC_DRAW);
+            glEnableVertexAttribArray(VertexAttribColor);
+            glVertexAttribPointer(VertexAttribColor, 3, GL_FLOAT, GL_FALSE, 3*sizeof(GLfloat), BUFFER_OFFSET(0));
+            
+            glBindVertexArrayOES(0);
         }
-        glBindBuffer(GL_ARRAY_BUFFER, vertexBuffers[1]);
-        glBufferData(GL_ARRAY_BUFFER, sizeof(vertCol), vertCol, GL_STATIC_DRAW);
-        glEnableVertexAttribArray(VertexAttribColor);
-        glVertexAttribPointer(VertexAttribColor, 3, GL_FLOAT, GL_FALSE, 3*sizeof(GLfloat), BUFFER_OFFSET(0));
-        
-        glBindVertexArrayOES(0);
     }
+    
     
 
    
@@ -439,27 +441,30 @@ public:
     // Bind each vertex array and call glDrawArrays
     //  for each of the ball and brick
 
-    for (Brick *brick in bricks) {
-        glBindVertexArrayOES(brick->_vertexArray);
-        if (brick->body && brick->_indices > 0)
-            glDrawArrays(GL_TRIANGLES, 0, brick->_indices);
+    for (Collidable *object in objects) {
+        if ([object isKindOfClass:[Brick class]]) {
+            Brick *brick = (Brick*)object;
+            glBindVertexArrayOES(brick->_vertexArray);
+            if (object->body && brick->_indices > 0)
+                glDrawArrays(GL_TRIANGLES, 0, brick->_indices);
+        } else if ([object isKindOfClass:[Player class]]) {
+            Player *player = (Player*)object;
+            glBindVertexArrayOES(player->_vertexArray);
+            if (player->body && player->_indices > 0)
+                glDrawArrays(GL_TRIANGLES, 0, player->_indices);
+        }
     }
-    
     
     glBindVertexArrayOES(ballVertexArray);
     if (theBall && numBallVerts > 0)
         glDrawArrays(GL_TRIANGLE_FAN, 0, numBallVerts);
     
-    glBindVertexArrayOES(playerVertexArray);
-    if (thePlayer && numPlayerVerts > 0)
-        glDrawArrays(GL_TRIANGLES, 0, numPlayerVerts);
+    
 }
 
 -(void)RegisterHit
 {
     // Set some flag here for processing later...
-    NSLog(@"HERE2");
-    ballHitPlayer = true;
 }
 
 -(void)LaunchBall
@@ -468,51 +473,106 @@ public:
     ballLaunched = true;
 }
 
-
 -(void)movePlayer:(CGFloat)pos {
-    thePlayer->SetTransform(b2Vec2(pos, 25.0f), 0);
+    for (Collidable *object in objects) {
+        if ([object isKindOfClass:[Player class]]) {
+            Player *player = (Player*)object;
+            player->body->SetTransform(b2Vec2(pos, 25.0f), 0);
+        }
+    }
 }
-
-
 
 -(void)HelloWorld
 {
-    groundBodyDef = new b2BodyDef;
-    groundBodyDef->position.Set(width / 2, -15.0f);
-    groundBody = world->CreateBody(groundBodyDef);
-    groundBox = new b2PolygonShape;
-    groundBox->SetAsBox(50.0f, 10.0f);
-    
-    groundBody->CreateFixture(groundBox, 0.0f);
+    [objects addObject:[[Floor alloc] init]];
+    Floor *floor = [objects lastObject];
     
     // Define the dynamic body. We set its position and call the body factory.
     b2BodyDef bodyDef;
-    bodyDef.type = b2_dynamicBody;
-    bodyDef.position.Set(0.0f, 4.0f);
-    b2Body* body = world->CreateBody(&bodyDef);
+    bodyDef.type = b2_kinematicBody;
+    bodyDef.position.Set(width / 2, -15.0f);
+    floor->body = world->CreateBody(&bodyDef);
+    if (floor->body) {
+        floor->body->SetUserData((__bridge void *)self);
+        
+        // Define another box shape for our dynamic body.
+        b2PolygonShape dynamicBox;
+        dynamicBox.SetAsBox(width, 5.0f);
+        
+        // Define the dynamic body fixture.
+        b2FixtureDef fixtureDef;
+        fixtureDef.shape = &dynamicBox;
+        
+        // Set the box density to be non-zero, so it will be dynamic.
+        fixtureDef.density = 1.0f;
+        
+        // Override the default friction.
+        fixtureDef.friction = 0.3f;
+        
+        // Add the shape to the body.
+        floor->body->CreateFixture(&fixtureDef);
+    }
     
-    // Define another box shape for our dynamic body.
-    b2PolygonShape dynamicBox;
-    dynamicBox.SetAsBox(1.0f, 1.0f);
+    [objects addObject:[[Wall alloc] init]];
+    Wall *wall = [objects lastObject];
     
-    // Define the dynamic body fixture.
-    b2FixtureDef fixtureDef;
-    fixtureDef.shape = &dynamicBox;
+    bodyDef.type = b2_kinematicBody;
+    bodyDef.position.Set(0.0f, height / 2);
+    wall->body = world->CreateBody(&bodyDef);
+    if (wall->body) {
+        wall->body->SetUserData((__bridge void *)self);
+        
+        // Define another box shape for our dynamic body.
+        b2PolygonShape dynamicBox;
+        dynamicBox.SetAsBox(5.0f, height);
+        
+        // Define the dynamic body fixture.
+        b2FixtureDef fixtureDef;
+        fixtureDef.shape = &dynamicBox;
+        
+        // Set the box density to be non-zero, so it will be dynamic.
+        fixtureDef.density = 1.0f;
+        
+        // Override the default friction.
+        fixtureDef.friction = 0.0f;
+        
+        // Add the shape to the body.
+        wall->body->CreateFixture(&fixtureDef);
+    }
     
-    // Set the box density to be non-zero, so it will be dynamic.
-    fixtureDef.density = 1.0f;
+    [objects addObject:[[Wall alloc] init]];
+    wall = [objects lastObject];
     
-    // Override the default friction.
-    fixtureDef.friction = 0.3f;
+    bodyDef.type = b2_kinematicBody;
+    bodyDef.position.Set(width, height / 2);
+    wall->body = world->CreateBody(&bodyDef);
+    if (wall->body) {
+        wall->body->SetUserData((__bridge void *)self);
+        
+        // Define another box shape for our dynamic body.
+        b2PolygonShape dynamicBox;
+        dynamicBox.SetAsBox(5.0f, height);
+        
+        // Define the dynamic body fixture.
+        b2FixtureDef fixtureDef;
+        fixtureDef.shape = &dynamicBox;
+        
+        // Set the box density to be non-zero, so it will be dynamic.
+        fixtureDef.density = 1.0f;
+        
+        // Override the default friction.
+        fixtureDef.friction = 0.0f;
+        
+        // Add the shape to the body.
+        wall->body->CreateFixture(&fixtureDef);
+    }
     
-    // Add the shape to the body.
-    body->CreateFixture(&fixtureDef);
     
     // Prepare for simulation. Typically we use a time step of 1/60 of a
     // second (60Hz) and 10 iterations. This provides a high quality simulation
     // in most game scenarios.
     float32 timeStep = 1.0f / 60.0f;
-    int32 velocityIterations = 6;
+    int32 velocityIterations = 10;
     int32 positionIterations = 2;
     
     // This is our little game loop.
@@ -522,11 +582,7 @@ public:
         // It is generally best to keep the time step and iterations fixed.
         world->Step(timeStep, velocityIterations, positionIterations);
         
-        // Now print the position and angle of the body.
-        b2Vec2 position = body->GetPosition();
-        float32 angle = body->GetAngle();
-        
-        printf("%4.2f %4.2f %4.2f\n", position.x, position.y, angle);
+
     }
 }
 

@@ -21,7 +21,7 @@ enum
 
 @interface CBox2D : NSObject {
 @public
-    NSMutableArray *bricks;
+    NSMutableArray *objects;
 }
 
 -(void) HelloWorld;

@@ -64,6 +64,10 @@
 		02E7D52D1AB90113009F3AD0 /* b2WheelJoint.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 02E7D4FC1AB90113009F3AD0 /* b2WheelJoint.cpp */; };
 		02E7D52E1AB90113009F3AD0 /* b2Rope.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 02E7D4FF1AB90113009F3AD0 /* b2Rope.cpp */; };
 		13615F6E1E934382006225A9 /* Brick.mm in Sources */ = {isa = PBXBuildFile; fileRef = 13615F6D1E934382006225A9 /* Brick.mm */; };
+		13B16DF81E958B0100CE62B8 /* Floor.mm in Sources */ = {isa = PBXBuildFile; fileRef = 13B16DF71E958B0100CE62B8 /* Floor.mm */; };
+		13B16DFB1E958B1300CE62B8 /* Wall.mm in Sources */ = {isa = PBXBuildFile; fileRef = 13B16DFA1E958B1300CE62B8 /* Wall.mm */; };
+		13B16DFE1E958B2500CE62B8 /* Player.mm in Sources */ = {isa = PBXBuildFile; fileRef = 13B16DFD1E958B2500CE62B8 /* Player.mm */; };
+		13B16E011E958BE700CE62B8 /* Collidables.mm in Sources */ = {isa = PBXBuildFile; fileRef = 13B16E001E958BE700CE62B8 /* Collidables.mm */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -189,6 +193,14 @@
 		02E7D5001AB90113009F3AD0 /* b2Rope.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = b2Rope.h; sourceTree = "<group>"; };
 		13615F6D1E934382006225A9 /* Brick.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = Brick.mm; sourceTree = "<group>"; };
 		13615F6F1E93438B006225A9 /* Brick.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = Brick.h; sourceTree = "<group>"; };
+		13B16DF71E958B0100CE62B8 /* Floor.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = Floor.mm; sourceTree = "<group>"; };
+		13B16DF91E958B0900CE62B8 /* Floor.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = Floor.h; sourceTree = "<group>"; };
+		13B16DFA1E958B1300CE62B8 /* Wall.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = Wall.mm; sourceTree = "<group>"; };
+		13B16DFC1E958B1A00CE62B8 /* Wall.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = Wall.h; sourceTree = "<group>"; };
+		13B16DFD1E958B2500CE62B8 /* Player.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = Player.mm; sourceTree = "<group>"; };
+		13B16DFF1E958B2F00CE62B8 /* Player.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = Player.h; sourceTree = "<group>"; };
+		13B16E001E958BE700CE62B8 /* Collidables.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = Collidables.mm; sourceTree = "<group>"; };
+		13B16E021E958BF200CE62B8 /* Collidables.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = Collidables.h; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -243,8 +255,9 @@
 				023436871A79714900F79786 /* Images.xcassets */,
 				023436891A79714900F79786 /* LaunchScreen.xib */,
 				023436761A79714900F79786 /* Supporting Files */,
-				13615F6D1E934382006225A9 /* Brick.mm */,
-				13615F6F1E93438B006225A9 /* Brick.h */,
+				13B16DF61E958ADD00CE62B8 /* Objects */,
+				13B16E001E958BE700CE62B8 /* Collidables.mm */,
+				13B16E021E958BF200CE62B8 /* Collidables.h */,
 			);
 			path = MyGLGame;
 			sourceTree = "<group>";
@@ -431,6 +444,21 @@
 			path = Rope;
 			sourceTree = "<group>";
 		};
+		13B16DF61E958ADD00CE62B8 /* Objects */ = {
+			isa = PBXGroup;
+			children = (
+				13615F6D1E934382006225A9 /* Brick.mm */,
+				13615F6F1E93438B006225A9 /* Brick.h */,
+				13B16DF71E958B0100CE62B8 /* Floor.mm */,
+				13B16DF91E958B0900CE62B8 /* Floor.h */,
+				13B16DFA1E958B1300CE62B8 /* Wall.mm */,
+				13B16DFC1E958B1A00CE62B8 /* Wall.h */,
+				13B16DFD1E958B2500CE62B8 /* Player.mm */,
+				13B16DFF1E958B2F00CE62B8 /* Player.h */,
+			);
+			name = Objects;
+			sourceTree = "<group>";
+		};
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
@@ -550,6 +578,7 @@
 				02E7D5091AB90113009F3AD0 /* b2ChainShape.cpp in Sources */,
 				02E7D5261AB90113009F3AD0 /* b2MotorJoint.cpp in Sources */,
 				02E7D5031AB90113009F3AD0 /* b2CollideEdge.cpp in Sources */,
+				13B16DFE1E958B2500CE62B8 /* Player.mm in Sources */,
 				02E7D5071AB90113009F3AD0 /* b2DynamicTree.cpp in Sources */,
 				02E7D5051AB90113009F3AD0 /* b2Collision.cpp in Sources */,
 				02E7D5161AB90113009F3AD0 /* b2Island.cpp in Sources */,
@@ -570,6 +599,8 @@
 				02E7D5191AB90113009F3AD0 /* b2ChainAndCircleContact.cpp in Sources */,
 				02E7D52A1AB90113009F3AD0 /* b2RevoluteJoint.cpp in Sources */,
 				02E7D52B1AB90113009F3AD0 /* b2RopeJoint.cpp in Sources */,
+				13B16DFB1E958B1300CE62B8 /* Wall.mm in Sources */,
+				13B16E011E958BE700CE62B8 /* Collidables.mm in Sources */,
 				02E7D5291AB90113009F3AD0 /* b2PulleyJoint.cpp in Sources */,
 				02E7D5121AB90113009F3AD0 /* b2Timer.cpp in Sources */,
 				02E7D52C1AB90113009F3AD0 /* b2WeldJoint.cpp in Sources */,
@@ -578,6 +609,7 @@
 				02E7D5251AB90113009F3AD0 /* b2Joint.cpp in Sources */,
 				02E7D5101AB90113009F3AD0 /* b2Settings.cpp in Sources */,
 				02E7D5211AB90113009F3AD0 /* b2PolygonContact.cpp in Sources */,
+				13B16DF81E958B0100CE62B8 /* Floor.mm in Sources */,
 				02E7D50E1AB90113009F3AD0 /* b2Draw.cpp in Sources */,
 				02E7D5221AB90113009F3AD0 /* b2DistanceJoint.cpp in Sources */,
 				02E7D50D1AB90113009F3AD0 /* b2BlockAllocator.cpp in Sources */,
