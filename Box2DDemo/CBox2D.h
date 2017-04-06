@@ -24,6 +24,8 @@ enum
     NSMutableArray *objects;
 }
 
+-(id) init:(bool) type;
+
 -(void) HelloWorld;
 
 -(void) LaunchBall;

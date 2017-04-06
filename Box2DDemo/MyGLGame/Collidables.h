@@ -16,6 +16,7 @@
     @public
     bool hit;
     b2Body *body;
+    NSString *_ID;
 }
 
 @end

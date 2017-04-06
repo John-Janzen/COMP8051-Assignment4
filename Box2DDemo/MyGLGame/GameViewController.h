@@ -9,7 +9,10 @@
 #import <UIKit/UIKit.h>
 #import <GLKit/GLKit.h>
 
-@interface GameViewController : GLKViewController
+@interface GameViewController : GLKViewController {
+    @public
+    bool _type;
+}
 - (IBAction)singleTap:(id)sender;
 
 @end

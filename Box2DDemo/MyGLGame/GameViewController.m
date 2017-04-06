@@ -48,7 +48,7 @@
     
     [self setupGL];
 
-    box2d = [[CBox2D alloc] init];
+    box2d = [[CBox2D alloc] init: _type];
     [box2d HelloWorld];
 }
 

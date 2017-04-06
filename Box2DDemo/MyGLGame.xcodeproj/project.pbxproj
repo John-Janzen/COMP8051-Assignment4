@@ -68,6 +68,7 @@
 		13B16DFB1E958B1300CE62B8 /* Wall.mm in Sources */ = {isa = PBXBuildFile; fileRef = 13B16DFA1E958B1300CE62B8 /* Wall.mm */; };
 		13B16DFE1E958B2500CE62B8 /* Player.mm in Sources */ = {isa = PBXBuildFile; fileRef = 13B16DFD1E958B2500CE62B8 /* Player.mm */; };
 		13B16E011E958BE700CE62B8 /* Collidables.mm in Sources */ = {isa = PBXBuildFile; fileRef = 13B16E001E958BE700CE62B8 /* Collidables.mm */; };
+		13B16E0B1E95BD5100CE62B8 /* StartViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 13B16E0A1E95BD5100CE62B8 /* StartViewController.m */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -201,6 +202,8 @@
 		13B16DFF1E958B2F00CE62B8 /* Player.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = Player.h; sourceTree = "<group>"; };
 		13B16E001E958BE700CE62B8 /* Collidables.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = Collidables.mm; sourceTree = "<group>"; };
 		13B16E021E958BF200CE62B8 /* Collidables.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = Collidables.h; sourceTree = "<group>"; };
+		13B16E091E95BD5100CE62B8 /* StartViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = StartViewController.h; sourceTree = "<group>"; };
+		13B16E0A1E95BD5100CE62B8 /* StartViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = StartViewController.m; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -249,6 +252,8 @@
 				0234367B1A79714900F79786 /* AppDelegate.m */,
 				0234367D1A79714900F79786 /* Shader.fsh */,
 				0234367F1A79714900F79786 /* Shader.vsh */,
+				13B16E091E95BD5100CE62B8 /* StartViewController.h */,
+				13B16E0A1E95BD5100CE62B8 /* StartViewController.m */,
 				023436811A79714900F79786 /* GameViewController.h */,
 				023436821A79714900F79786 /* GameViewController.m */,
 				023436841A79714900F79786 /* Main.storyboard */,
@@ -607,6 +612,7 @@
 				02E7D5281AB90113009F3AD0 /* b2PrismaticJoint.cpp in Sources */,
 				02E7D5241AB90113009F3AD0 /* b2GearJoint.cpp in Sources */,
 				02E7D5251AB90113009F3AD0 /* b2Joint.cpp in Sources */,
+				13B16E0B1E95BD5100CE62B8 /* StartViewController.m in Sources */,
 				02E7D5101AB90113009F3AD0 /* b2Settings.cpp in Sources */,
 				02E7D5211AB90113009F3AD0 /* b2PolygonContact.cpp in Sources */,
 				13B16DF81E958B0100CE62B8 /* Floor.mm in Sources */,
