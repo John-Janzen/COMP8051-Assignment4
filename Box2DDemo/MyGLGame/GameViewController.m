@@ -15,7 +15,6 @@
 @interface GameViewController () {
     GLuint _program;
     GLint mvpMatUniform;
-
     CBox2D *box2d;
 }
 @property (strong, nonatomic) EAGLContext *context;
@@ -48,7 +47,7 @@
     
     [self setupGL];
 
-    box2d = [[CBox2D alloc] init: _type];
+    box2d = [[CBox2D alloc] init: _type :self];
     [box2d HelloWorld];
 }
 

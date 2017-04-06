@@ -15,6 +15,8 @@
 #include "Wall.h"
 #include "Floor.h"
 #include "Collidables.h"
+#import "CText2D.h"
+#include "GameViewController.h"
 
 #define BUFFER_OFFSET(i) ((char *)NULL + (i))
 //#define LOG_TO_CONSOLE
@@ -93,13 +95,16 @@ public:
     // You will also need some extra variables here
     bool ballLaunched, ballHitFloor, started, _type;
     float totalElapsedTime;
+    CText2D *theHUD;
+    int score, ballsDown, scorePlayer2;
+    GameViewController *game;
 }
 
 @end
 
 @implementation CBox2D
 
-- (instancetype)init : (bool) type
+- (instancetype)init : (bool) type :(id) view
 {
     self = [super init];
     if (self) {
@@ -112,6 +117,7 @@ public:
         numOfBricks = bricksPerRow * 6;
         brickDistanceDown = (numOfBricks / bricksPerRow) * BRICK_HEIGHT;
         _type = type;
+        score = ballsDown = scorePlayer2 = 0;
 
         // For brick & ball sample
         contactListener = new CContactListener();
@@ -119,6 +125,7 @@ public:
         
         // Set up the brick and ball objects for Box2D
         [self InitializePieces];
+        game = view;
         
         totalElapsedTime = 0;
         ballLaunched = false;
@@ -178,8 +185,14 @@ public:
             theBall->SetAwake(false);
             if (_type) {
                 theBall->SetTransform(b2Vec2(width / 2, BALL_POS_Y), 0);
+                ballsDown++;
             } else {
                 theBall->SetTransform(b2Vec2(width / 2, height / 2), 0);
+                if ([object->_ID isEqualToString:@"Player"]) {
+                    score++;
+                } else {
+                    scorePlayer2++;
+                }
             }
             
             NSLog(@"Floor Hit");
@@ -261,9 +274,6 @@ public:
         }
     }
     
-    
-
-   
     // Set up vertex arrays and buffers for the brick and ball here
     
     if (theBall)
@@ -306,6 +316,33 @@ public:
         
         glBindVertexArrayOES(0);
     }
+    
+    if (_type) {
+        NSString *text1 = [NSString stringWithFormat:@"Balls Lost: %d", ballsDown];
+        
+        theHUD = [[CText2D alloc] init];
+        theHUD.pointSize = 12;
+        theHUD.dotsPerInch = 100;
+        [theHUD setTextLocation:CGPointMake(50, 0)];
+        [theHUD DrawText:text1 inView:game.view withColor:GLKVector3Make(1, 1, 0)];
+    } else {
+        
+        NSString *text1 = [NSString stringWithFormat:@"Player 2 Score: %d", scorePlayer2];
+        
+        theHUD = [[CText2D alloc] init];
+        theHUD.pointSize = 12;
+        theHUD.dotsPerInch = 100;
+        [theHUD setTextLocation:CGPointMake(width - 50, height / 2)];
+        [theHUD DrawText:text1 inView:game.view withColor:GLKVector3Make(1, 1, 0)];
+    }
+    
+    NSString *text1 = [NSString stringWithFormat:@"Player 1 Score: %d", score];
+    
+    theHUD = [[CText2D alloc] init];
+    theHUD.pointSize = 12;
+    theHUD.dotsPerInch = 100;
+    [theHUD setTextLocation:CGPointMake(50, height / 2)];
+    [theHUD DrawText:text1 inView:game.view withColor:GLKVector3Make(1, 1, 0)];
 
     // For now assume simple ortho projection since it's only 2D
     GLKMatrix4 projectionMatrix = GLKMatrix4MakeOrtho(0, width, 0, height, -10, 100);
@@ -487,8 +524,8 @@ public:
             object->hit = false;
             object->_ID = @"Enemy";
         }
-        
         ballLocationY = height / 2;
+        
     }
     
     [objects addObject:[[Player alloc] init]];

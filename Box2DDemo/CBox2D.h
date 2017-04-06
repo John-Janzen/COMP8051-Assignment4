@@ -24,7 +24,7 @@ enum
     NSMutableArray *objects;
 }
 
--(id) init:(bool) type;
+-(id) init:(bool) type :(id) view;
 
 -(void) HelloWorld;
 
