@@ -22,17 +22,17 @@
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <subviews>
                             <button opaque="NO" contentMode="scaleToFill" fixedFrame="YES" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="Pr6-6z-WTi">
-                                <rect key="frame" x="164" y="192" width="46" height="30"/>
+                                <rect key="frame" x="169" y="192" width="36" height="30"/>
                                 <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
-                                <state key="normal" title="Button"/>
+                                <state key="normal" title="Pong"/>
                                 <connections>
                                     <segue destination="BV1-FR-VrT" kind="presentation" identifier="PongSegue" id="g7z-W2-XFQ"/>
                                 </connections>
                             </button>
                             <button opaque="NO" contentMode="scaleToFill" fixedFrame="YES" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="mIG-hy-eng">
-                                <rect key="frame" x="164" y="305" width="46" height="30"/>
+                                <rect key="frame" x="153" y="305" width="69" height="30"/>
                                 <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
-                                <state key="normal" title="Button"/>
+                                <state key="normal" title="Arkanoids"/>
                                 <connections>
                                     <segue destination="BV1-FR-VrT" kind="presentation" identifier="ArkanoidsSegue" id="2Oi-QK-aeA"/>
                                 </connections>
